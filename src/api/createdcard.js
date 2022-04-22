@@ -1,16 +1,16 @@
 import request from "@/utils/request";
 
 // 上传视频
-export function create_qishi_card(data) {
+export function addCard(data) {
   return request({
-    url: "create_qishi_card",
+    url: "addCard",
     method: "post",
     data,
   });
 }
 export function create_vip_card(data) {
   return request({
-    url: "create_qishi_card",
+    url: "addCard",
     method: "post",
     data,
   });
@@ -31,16 +31,23 @@ export function getVideo(data) {
     data,
   });
 }
-export function setArticleStatus(data) {
+export function wx_uploadimg(data) {
   return request({
-    url: "setArticleStatus",
+    url: "wx_uploadimg",
     method: "post",
     data,
   });
 }
-export function editArticle(data) {
+export function setWxCardStatus(data) {
   return request({
-    url: "editArticle",
+    url: "setWxCardStatus",
+    method: "post",
+    data,
+  });
+}
+export function editCard(data) {
+  return request({
+    url: "editCard",
     method: "post",
     data,
   });

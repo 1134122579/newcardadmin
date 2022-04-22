@@ -192,7 +192,7 @@ const createRouter = () =>
     scrollBehavior: () => ({
       y: 0,
     }),
-    // base: "/designvideo", // 加上这一行 测试环境不要加
+    base: "/cardAdmin", // 加上这一行 测试环境不要加
     routes: constantRoutes,
   });
 
