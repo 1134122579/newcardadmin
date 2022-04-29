@@ -78,27 +78,7 @@ export const constantRoutes = [
       },
     ],
   },
-  // {
-  //   path: "/user",
-  //   component: Layout,
-  //   redirect: "/user",
-  //   name: "user",
-  //   meta: {
-  //     title: "用户管理",
-  //     icon: "user",
-  //   },
-  //   children: [
-  //     {
-  //       path: "/userList",
-  //       component: () => import("@/views/user/list"),
-  //       name: "userList",
-  //       meta: {
-  //         title: "普通用户",
-  //         icon: "user",
-  //       },
-  //     },
-  //   ],
-  // },
+
   {
     path: "/cartedcard",
     component: Layout,
@@ -120,16 +100,37 @@ export const constantRoutes = [
           icon: "article",
         },
       },
-      //   {
-      //     path: "advert",
-      //     component: () => import("@/views/essay/advert"),
-      //     name: "advert",
-      //     meta: {
-      //       roles: ["admin"],
-      //       title: "底部广告",
-      //       icon: "ad",
-      //     },
-      //   },
+      {
+        path: "orderlist",
+        component: () => import("@/views/cartedcard/orderlist"),
+        name: "orderlist",
+        meta: {
+          roles: ["admin"],
+          title: "领取记录",
+          icon: "order",
+        },
+      },
+    ],
+  },
+  {
+    path: "/loglist",
+    component: Layout,
+    redirect: "list",
+    name: "user",
+    meta: {
+      title: "操作日志",
+      icon: "user",
+    },
+    children: [
+      {
+        path: "list",
+        component: () => import("@/views/loglsit/list"),
+        name: "journallist",
+        meta: {
+          title: "操作日志",
+          icon: "user",
+        },
+      },
     ],
   },
   {
@@ -192,7 +193,7 @@ const createRouter = () =>
     scrollBehavior: () => ({
       y: 0,
     }),
-    base: "/cardAdmin", // 加上这一行 测试环境不要加
+    base: "/cardadmin", // 加上这一行 测试环境不要加
     routes: constantRoutes,
   });
 

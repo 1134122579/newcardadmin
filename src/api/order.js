@@ -1,59 +1,59 @@
-import request from '@/utils/request'
+import request from "@/utils/request";
 
 // 获取证书订单列表
-export function getCertOrderList(data) {
-    return request({
-        url: 'getCertOrderList',
-        method: 'post',
-        data
-    })
+export function getVipOrderList(data) {
+  return request({
+    url: "getVipOrderList",
+    method: "post",
+    data,
+  });
 }
-// 备注证书订单
-export function setcertOrderRemark(data) {
-    return request({
-        url: 'setcertOrderRemark',
-        method: 'post',
-        data
-    })
+export function setVipOrderRemark(data) {
+  return request({
+    url: "setVipOrderRemark",
+    method: "post",
+    data,
+  });
 }
-
-// 证书订单退款
-export function return_cert_order(data) {
-    return request({
-        url: 'return_cert_order',
-        method: 'post',
-        data
-    })
+export function delVipOrder(data) {
+  return request({
+    url: "delVipOrder",
+    method: "post",
+    data,
+  });
 }
-// 修改证书订单信息
-export function edit_cert_order(data) {
-    return request({
-        url: 'edit_cert_order',
-        method: 'post',
-        data
-    })
+export function getSelectCard(data) {
+  return request({
+    url: "getSelectCard",
+    method: "get",
+    data,
+  });
 }
-// 获取赛事订单订单列表
-export function getMatchOrderList(data) {
-    return request({
-        url: 'getMatchOrderList',
-        method: 'post',
-        data
-    })
+export function returnVipOrder(data) {
+  return request({
+    url: "returnVipOrder",
+    method: "post",
+    data,
+  });
 }
-// 备注赛事订单
-export function setMatchOrderRemark(data) {
-    return request({
-        url: 'setMatchOrderRemark',
-        method: 'post',
-        data
-    })
+export function exportVipOrder(data) {
+  return request({
+    url: "exportVipOrder",
+    method: "post",
+    data,
+  });
 }
-// 证书订单退款
-export function return_match_order(data) {
-    return request({
-        url: 'return_match_order',
-        method: 'post',
-        data
-    })
+export function setVipOrderStatus(data) {
+  return request({
+    url: "setVipOrderStatus",
+    method: "post",
+    data,
+  });
+}
+export function batchAuditImport(data) {
+  return request({
+    url: "batchAuditImport",
+    method: "post",
+    data,
+  });
 }

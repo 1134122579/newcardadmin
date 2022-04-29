@@ -1,11 +1,12 @@
 <template>
-  <div class="app-container">
+  <div class="app-container applist">
     <!-- 搜索 -->
     <el-card>
       <el-form
         :inline="true"
         :model="listQuery"
         label-width="100px"
+        size="mini"
         class="demo-form-inline"
       >
         <el-form-item label="卡片名称:">
@@ -14,7 +15,6 @@
             placeholder="请输入输入名称"
             class="filter-item"
             clearable
-            size="small"
             @keyup.enter.native="handleFilter"
           />
         </el-form-item>
@@ -26,28 +26,72 @@
           >
             <!-- 用户状态 1 进行中 2 已结束 -->
             <el-radio-button label>全部</el-radio-button>
-            <el-radio-button label="1">已上架</el-radio-button>
-            <el-radio-button label="2">已下架</el-radio-button>
+            <el-radio-button label="1">启用</el-radio-button>
+            <el-radio-button label="2">停用</el-radio-button>
           </el-radio-group>
         </el-form-item>
-        <el-form-item>
-          <el-button
-            v-waves
+        <el-form-item label="身份认证:" prop="is_auth">
+          <el-radio-group
+            v-model="listQuery.is_auth"
             size="mini"
-            type="primary"
-            class="starh_button"
-            @click="handleFilter"
-            >搜索</el-button
+            @change="selectStatus"
           >
-          <el-button
-            v-waves
-            size="mini"
-            type="success"
-            class="starh_button"
-            @click="handleAdd"
-            >添加卡片</el-button
-          >
+            <el-radio-button label>全部</el-radio-button>
+            <el-radio-button label="1">需要</el-radio-button>
+            <el-radio-button label="2">不需要</el-radio-button>
+          </el-radio-group>
         </el-form-item>
+        <el-form-item label="是否收费:" prop="is_free">
+          <el-radio-group
+            v-model="listQuery.is_free"
+            size="mini"
+            @change="selectStatus"
+          >
+            <el-radio-button label>全部</el-radio-button>
+
+            <el-radio-button label="1">免费</el-radio-button>
+            <el-radio-button label="2">付费</el-radio-button>
+          </el-radio-group>
+        </el-form-item>
+        <el-form-item label="人工审核:" prop="is_shehe">
+          <el-radio-group
+            v-model="listQuery.is_shehe"
+            size="mini"
+            @change="selectStatus"
+          >
+            <el-radio-button label>全部</el-radio-button>
+            <el-radio-button label="1">需要</el-radio-button>
+            <el-radio-button label="2">不需要</el-radio-button>
+          </el-radio-group>
+        </el-form-item>
+        <div>
+          <el-form-item label=" ">
+            <el-button
+              v-waves
+              size="mini"
+              type="primary"
+              class="starh_button"
+              @click="handleFilter"
+              >搜索</el-button
+            >
+            <el-button
+              v-waves
+              size="mini"
+              class="starh_button"
+              @click="handleempty"
+              >清空</el-button
+            >
+
+            <el-button
+              v-waves
+              size="mini"
+              type="success"
+              class="starh_button"
+              @click="handleAdd"
+              >添加卡片</el-button
+            >
+          </el-form-item>
+        </div>
       </el-form>
     </el-card>
     <!-- 列表 -->
@@ -79,15 +123,23 @@
                   卡片ID：<span>{{ row.card_id }}</span>
                 </p>
                 <p>
+                  性别限制：<span v-if="row.sex == 0">不限制</span>
+                  <span v-if="row.sex == 1">男</span>
+                  <span v-if="row.sex == 2">女</span>
+                </p>
+                <p>
                   领取年龄：<span
                     >{{ row.min_age }}岁至{{ row.max_age }}岁</span
                   >
                 </p>
                 <p>
-                  开始时间：<span>{{ row.start_time }}</span>
+                  生效时间：<span>{{ row.start_time }}</span>
                 </p>
                 <p>
                   失效时间：<span>{{ row.time_out }}</span>
+                </p>
+                <p>
+                  领取开始时间：<span>{{ row.start_receive_time }}</span>
                 </p>
                 <p>
                   领取截止时间：<span>{{ row.receive_time }}</span>
@@ -103,7 +155,7 @@
           label="卡片封面"
           align="center"
           :show-overflow-tooltip="true"
-          width="200px"
+          width="160px"
         >
           <template slot-scope="{ row }">
             <el-image
@@ -112,16 +164,24 @@
             ></el-image>
           </template>
         </el-table-column>
-        <!-- <el-table-column
-          label="页面背景图"
+        <el-table-column
+          label="领取背景图"
           align="center"
           :show-overflow-tooltip="true"
-          width="180px"
+          width="120px"
         >
           <template slot-scope="{ row }">
             <el-image :src="row.img" :preview-src-list="[row.img]"></el-image>
           </template>
-        </el-table-column> -->
+        </el-table-column>
+        <el-table-column
+          label="开门次数"
+          width="110"
+          align="center"
+          prop="come_in_num"
+          sortable
+          min-width="60px"
+        />
         <el-table-column label="金额" align="center" prop="price" sortable>
           <template slot-scope="{ row }">
             <span>{{ row.price }}</span>
@@ -132,6 +192,7 @@
           align="center"
           prop="is_free"
           sortable
+          width="120"
         >
           <template slot-scope="{ row }">
             <el-tag
@@ -144,7 +205,7 @@
         </el-table-column>
         <el-table-column
           label="人工审核"
-          width="120"
+          min-width="110"
           align="center"
           prop="is_shehe"
           sortable
@@ -158,14 +219,26 @@
             >
           </template>
         </el-table-column>
-        <el-table-column label="状态" align="center" prop="status" sortable>
+        <el-table-column
+          label="身份认证"
+          width="120"
+          align="center"
+          prop="is_auth"
+          sortable
+        >
           <template slot-scope="{ row }">
             <el-tag
-              :type="row.status | typeFilter"
+              :type="row.is_auth | typeFilter"
               size="small"
               effect="dark"
-              @click="handleEditStatus(row.id, row.status)"
-              >{{ row.status | statusFilter }}</el-tag
+              >{{ row.is_auth | sheheFilter }}</el-tag
+            >
+          </template>
+        </el-table-column>
+        <el-table-column label="状态" align="center" prop="status" sortable>
+          <template slot-scope="{ row }">
+            <el-tag :type="row.status | typeFilter" size="small" effect="dark">
+              {{ row.status | statusFilter }}</el-tag
             >
           </template>
         </el-table-column>
@@ -175,8 +248,7 @@
             <el-popover placement="top" width="220" trigger="click">
               <vue-qr
                 :text="
-                  'http://api.skyorange.cn/wxvip/studentauthuser?card_id=' +
-                  row.id
+                  'http://api.skyorange.cn/wxh5/deawcard?card_id=' + row.id
                 "
                 :size="200"
               ></vue-qr>
@@ -201,14 +273,21 @@
           label="创建时间"
           :show-overflow-tooltip="true"
           align="center"
-          min-width="100px"
+          min-width="120px"
         >
           <template slot-scope="{ row }">
             <span>{{ row.create_time }}</span>
           </template>
         </el-table-column>
-        <el-table-column label="操作" align="center" min-width="150">
+        <el-table-column label="操作" align="center" min-width="240">
           <template slot-scope="{ row }">
+            <el-button
+              :type="row.status == 1 ? 'info' : 'success'"
+              size="mini"
+              @click="handleEditStatus(row.id, row.status)"
+            >
+              {{ row.status == 1 ? "停用" : "启用" }}</el-button
+            >
             <el-button type="primary" size="mini" @click="handleEdit(row)"
               >编辑</el-button
             >
@@ -231,8 +310,8 @@
       :title="is_edit ? '编辑' : '添加'"
       :visible.sync="dialogAddFormVisible"
       center
-      top="5vh"
-      width="42%"
+      top="2vh"
+      width="62%"
     >
       <el-form
         :model="form"
@@ -241,51 +320,133 @@
         label-width="120px"
         :rules="rules"
         size="mini"
+        class="fromdata"
       >
-        <el-form-item label="卡片名称:" prop="name">
+        <el-form-item class="form-title" label="卡片名称:" prop="name">
           <el-input
-            v-model="form.name"
+            v-model.trim="form.name"
             clearable
             placeholder="请输入卡片名称"
             :disabled="is_edit"
           />
         </el-form-item>
-        <el-form-item label="上传封面:" prop="cover">
-          <el-upload
-            class="avatar-uploader"
-            :action="action"
-            accept="png"
-            :disabled="is_edit"
-            v-loading="iscoverloading"
-            :before-upload="beforecoverUpload"
-          >
-            <img v-if="form.cover" :src="form.cover" class="avatar" />
-            <i v-else class="el-icon-plus avatar-uploader-icon"></i>
-            <div slot="tip" class="el-upload__tip" style="color: #e6a23c">
-              请上传封面！(只能是png格式,卡片提交后无法编辑)
-            </div>
-          </el-upload>
-        </el-form-item>
-        <el-form-item label="卡片状态:" prop="status">
+        <div>
+          <el-form-item label="上传封面:" prop="cover">
+            <el-upload
+              class="avatar-uploader"
+              :action="action"
+              accept="png"
+              :disabled="is_edit"
+              v-loading="iscoverloading"
+              :before-upload="beforecoverUpload"
+            >
+              <img v-if="form.cover" :src="form.cover" class="avatar" />
+              <i v-else class="el-icon-plus avatar-uploader-icon"></i>
+              <div slot="tip" class="el-upload__tip" style="color: #e6a23c">
+                请上传封面！(只能是png格式,卡片提交后无法编辑)，尺寸750*448
+              </div>
+            </el-upload>
+          </el-form-item>
+          <el-form-item label="上传领取背景:" prop="img">
+            <el-upload
+              class="avatar-uploader"
+              :action="imgaction"
+              accept="image/*"
+              v-loading="isimgloading"
+              :show-file-list="false"
+              :on-success="handleImgAvatarSuccess"
+            >
+              <img v-if="form.img" :src="form.img" class="avatar" />
+              <i v-else class="el-icon-plus avatar-uploader-icon"></i>
+              <div slot="tip" class="el-upload__tip" style="color: #e6a23c">
+                请上传卡片领取背景！尺寸750*1334 (高度尽量大于1334)
+              </div>
+            </el-upload>
+          </el-form-item>
+        </div>
+
+        <div class="sharestyle">
+          <el-form-item label="分享标题:" prop="title">
+            <el-input
+              v-model.trim="form.title"
+              clearable
+              placeholder="请输入分享标题"
+              type="textarea"
+              show-word-limit
+              maxlength="80"
+            />
+          </el-form-item>
+        </div>
+        <div class="sharestyle">
+          <el-form-item label="分享简介:" prop="content">
+            <el-input
+              v-model.trim="form.content"
+              clearable
+              placeholder="请输入分享简介"
+              type="textarea"
+              maxlength="80"
+              show-word-limit
+            />
+          </el-form-item>
+        </div>
+        <!-- <el-form-item label="卡片状态:" prop="status">
           <el-radio-group v-model="form.status" size="mini">
             <el-radio-button :label="1">启用</el-radio-button>
             <el-radio-button :label="2">停用</el-radio-button>
           </el-radio-group>
-        </el-form-item>
+        </el-form-item> -->
         <el-form-item label="身份认证:" prop="is_auth">
-          <el-radio-group v-model="form.is_auth" size="mini">
+          <el-radio-group
+            v-model="form.is_auth"
+            size="mini"
+            :disabled="form.is_area == 1 || form.sex > 0 || is_edit"
+          >
             <el-radio-button label="1">需要</el-radio-button>
             <el-radio-button label="2">不需要</el-radio-button>
           </el-radio-group>
         </el-form-item>
         <el-form-item label="是否收费:" prop="is_free">
-          <el-radio-group v-model="form.is_free" size="mini">
+          <el-radio-group
+            v-model="form.is_free"
+            size="mini"
+            :disabled="is_edit"
+          >
             <el-radio-button label="1">免费</el-radio-button>
             <el-radio-button label="2">付费</el-radio-button>
           </el-radio-group>
         </el-form-item>
+        <el-form-item label="卡片金额:" v-if="form.is_free == 2" prop="price">
+          <el-input-number
+            :disabled="is_edit"
+            v-model="form.price"
+            :min="0"
+          ></el-input-number>
+        </el-form-item>
+        <el-form-item label="人工审核:" prop="is_shehe">
+          <el-radio-group
+            :disabled="is_edit"
+            v-model="form.is_shehe"
+            size="mini"
+          >
+            <el-radio-button label="1">需要</el-radio-button>
+            <el-radio-button label="2">不需要</el-radio-button>
+          </el-radio-group>
+        </el-form-item>
+        <el-form-item label="性别限制:" prop="sex">
+          <el-radio-group
+            :disabled="is_edit"
+            v-model="form.sex"
+            size="mini"
+            @change="sexchange"
+          >
+            <el-radio-button label="0">不限制</el-radio-button>
+            <el-radio-button label="1">男</el-radio-button>
+            <el-radio-button label="2">女</el-radio-button>
+          </el-radio-group>
+        </el-form-item>
         <el-form-item label="区域限定:" prop="is_area">
           <el-radio-group
+            :disabled="is_edit"
             @change="areachange"
             v-model="form.is_area"
             size="mini"
@@ -294,17 +455,6 @@
             <el-radio-button label="2">不限定</el-radio-button>
           </el-radio-group>
         </el-form-item>
-        <el-form-item label="人工审核:" prop="is_shehe">
-          <el-radio-group
-            :disabled="form.is_area == 1"
-            v-model="form.is_shehe"
-            size="mini"
-          >
-            <el-radio-button label="1">需要</el-radio-button>
-            <el-radio-button label="2">不需要</el-radio-button>
-          </el-radio-group>
-        </el-form-item>
-
         <el-form-item
           label="限定条件:"
           v-if="form.is_area == 1"
@@ -313,6 +463,7 @@
           <el-select
             v-model="form.area_card"
             multiple
+            :disabled="is_edit"
             filterable
             allow-create
             @change="area_cardchange"
@@ -332,35 +483,42 @@
 
         <el-form-item label="进门次数:" prop="come_in_num">
           <el-input-number
-            controls-position="right"
             v-model="form.come_in_num"
-            :min="0"
+            :min="1"
+            :disabled="is_edit"
           ></el-input-number>
+          <span> 次/每日</span>
         </el-form-item>
-        <el-form-item label="卡片金额:" v-if="form.is_free == 2" prop="price">
+        <el-form-item
+          label="间隔时间:"
+          v-if="form.come_in_num > 1"
+          prop="jg_min"
+        >
           <el-input-number
-            controls-position="right"
-            v-model="form.price"
-            :min="0"
+            :disabled="is_edit"
+            v-model="form.jg_min"
+            :min="1"
           ></el-input-number>
+          <span>分钟</span>
         </el-form-item>
+        <div>
+          <el-form-item label="最小年龄:" prop="min_age">
+            <el-input-number
+              v-model="form.min_age"
+              :disabled="is_edit"
+              :min="0"
+            ></el-input-number>
+          </el-form-item>
+          <el-form-item label="最大年龄:" prop="max_age">
+            <el-input-number
+              v-model="form.max_age"
+              :disabled="is_edit"
+              :min="0"
+            ></el-input-number>
+          </el-form-item>
+        </div>
 
-        <el-form-item label="最小年龄:" prop="min_age">
-          <el-input-number
-            controls-position="right"
-            v-model="form.min_age"
-            :min="0"
-          ></el-input-number>
-        </el-form-item>
-
-        <el-form-item label="最大年龄:" prop="max_age">
-          <el-input-number
-            controls-position="right"
-            v-model="form.max_age"
-            :min="0"
-          ></el-input-number>
-        </el-form-item>
-        <el-form-item label="开始时间:" prop="start_time">
+        <!-- <el-form-item label="开始时间:" prop="start_time">
           <el-date-picker
             clearable
             v-model="form.start_time"
@@ -381,28 +539,77 @@
             :disabled="is_edit"
           >
           </el-date-picker>
-        </el-form-item>
-        <el-form-item label="领取截止时间:" prop="receive_time">
+        </el-form-item> -->
+        <div class="user-hourstyle" style="display: flex">
+          <el-form-item label="当日使用时间:" prop="min_use_hour">
+            <el-time-select
+              placeholder="起始时间"
+              v-model="form.min_use_hour"
+              @change="min_use_hourchange"
+              :picker-options="{
+                start: '08:00',
+                step: '00:01',
+                end: '22:00',
+              }"
+            >
+            </el-time-select>
+          </el-form-item>
+          <el-form-item
+            label="-"
+            class="max_use_hour"
+            label-width="10"
+            prop="max_use_hour"
+            :required="false"
+          >
+            <el-time-select
+              placeholder="结束时间"
+              v-model="form.max_use_hour"
+              :picker-options="{
+                start: '08:00',
+                step: '00:01',
+                end: '22:00',
+                minTime: form.min_use_hour,
+              }"
+            >
+            </el-time-select>
+          </el-form-item>
+        </div>
+        <el-form-item
+          label="卡片生效时间:"
+          class="cardtimestyle"
+          prop="cardtime"
+        >
           <el-date-picker
-            clearable
-            v-model="form.receive_time"
-            type="datetime"
+            v-model="form.cardtime"
+            type="datetimerange"
+            :picker-options="pickerOptions"
             value-format="timestamp"
-            placeholder="选择领取截止时间"
+            :unlink-panels="true"
+            :disabled="is_edit"
+            start-placeholder="卡片生效时间"
+            end-placeholder="卡片过期时间"
+            :default-time="['00:00:00']"
           >
           </el-date-picker>
         </el-form-item>
 
-        <!-- <el-form-item label="所属话题:" prop="lable">
-          <el-checkbox-group v-model="form.lable">
-            <el-checkbox
-              :label="item"
-              v-for="(item, index) in typelist"
-              :key="index"
-              :disabled="item == '#天空之橙·DESIGN'"
-            ></el-checkbox>
-          </el-checkbox-group>
-        </el-form-item> -->
+        <el-form-item
+          label="卡片领取时间:"
+          class="cardtimestyle"
+          prop="receivetime"
+        >
+          <el-date-picker
+            clearable
+            v-model="form.receivetime"
+            :picker-options="pickerOptions"
+            :unlink-panels="true"
+            type="datetimerange"
+            value-format="timestamp"
+            start-placeholder="领取开始日期"
+            end-placeholder="领取结束日期"
+          >
+          </el-date-picker>
+        </el-form-item>
         <el-form-item
           label="卡片规则:"
           class="descstyle"
@@ -413,6 +620,7 @@
             v-model="form.desc"
             clearable
             type="textarea"
+            :disabled="is_edit"
             :rows="6"
             placeholder=" 请输入卡片规则"
             show-word-limit
@@ -466,16 +674,16 @@ export default {
     },
     sheheFilter(status) {
       const statusMap = {
-        1: "是",
-        2: "否",
+        1: "需要",
+        2: "不需要",
       };
       return statusMap[status];
     },
     // 状态： 1 自动，2 手动
     statusFilter(status) {
       const statusMap = {
-        1: "已上架",
-        2: "已下架",
+        1: "启用",
+        2: "停用",
       };
       return statusMap[status];
     },
@@ -499,10 +707,31 @@ export default {
   },
 
   data() {
+    const validateDate = (rule, value, callback) => {
+      if (value) {
+        let timestamp = new Date().getTime(); // 当前的时间戳
+        timestamp = timestamp + 2 * 60 * 60 * 1000;
+        if (value < timestamp) {
+          callback(new Error("不能选择当前时间2个小时之前的时间"));
+        } else {
+          callback();
+        }
+      } else {
+        callback();
+      }
+    };
     return {
+      pickerOptions: {
+        disabledDate: (time) => {
+          const curDate = new Date().getTime() - 1 * 24 * 3600 * 1000;
+          const day = 10 * 24 * 3600 * 1000;
+          return time.getTime() < curDate;
+        },
+      },
       area_cardoptions: [],
       autosize: { minRows: 10, maxRows: 30 },
       iscoverloading: false,
+      isimgloading: false,
       isvideoloading: false,
       dataObj: {
         token: "",
@@ -521,10 +750,31 @@ export default {
             trigger: "blur",
           },
         ],
+        min_use_hour: [
+          {
+            required: true,
+            message: "请选择开始使用时间",
+            trigger: "blur",
+          },
+        ],
+        max_use_hour: [
+          {
+            required: true,
+            message: "请选择结束时间",
+            trigger: "blur",
+          },
+        ],
         price: [
           {
             required: true,
             message: "请输入金额",
+            trigger: "blur",
+          },
+        ],
+        jg_min: [
+          {
+            required: true,
+            message: "请输入间隔时间",
             trigger: "blur",
           },
         ],
@@ -539,6 +789,20 @@ export default {
           {
             required: true,
             message: "请选择",
+            trigger: "blur",
+          },
+        ],
+        title: [
+          {
+            required: true,
+            message: "请输入分享标题",
+            trigger: "blur",
+          },
+        ],
+        content: [
+          {
+            required: true,
+            message: "请输入分享简介",
             trigger: "blur",
           },
         ],
@@ -568,6 +832,13 @@ export default {
           {
             required: true,
             message: "请上传封面",
+            trigger: "blur",
+          },
+        ],
+        img: [
+          {
+            required: true,
+            message: "请上传背景图",
             trigger: "blur",
           },
         ],
@@ -606,18 +877,18 @@ export default {
             trigger: "blur",
           },
         ],
-        start_time: [
+        receivetime: [
           {
             required: true,
-            trigger: "blur",
-            message: "选择开始时间",
+            trigger: "change",
+            message: "选择领取时间",
           },
         ],
-        time_out: [
+        cardtime: [
           {
             required: true,
-            trigger: "blur",
-            message: "选择结束时间",
+            trigger: "change",
+            message: "选择生效时间",
           },
         ],
         receive_time: [
@@ -634,6 +905,13 @@ export default {
             message: "选择限制条件",
           },
         ],
+        sex: [
+          {
+            required: true,
+            trigger: "blur",
+            message: "选择限制条件",
+          },
+        ],
         desc: [
           {
             required: true,
@@ -642,7 +920,7 @@ export default {
           },
         ],
       },
-      // action: process.env.VUE_APP_BASE_API + "/upImage",
+      imgaction: process.env.VUE_APP_BASE_API + "/upImage",
       action: process.env.VUE_APP_BASE_API + "/wx_uploadimg",
       tableKey: 0,
       list: null,
@@ -655,6 +933,9 @@ export default {
       listQuery: {
         page: 1,
         pageSize: 10,
+        is_free: "",
+        is_shehe: "",
+        is_auth: "",
         title: "",
         status: "",
         querydate: "",
@@ -662,20 +943,24 @@ export default {
       adverlist: [],
       form: {
         name: "",
+        sex: 0,
         is_auth: 1,
         price: "",
         status: 1,
-        is_shehe: 1,
+        is_shehe: 2,
         cover: "",
         is_free: 1,
         is_area: 2,
         come_in_num: 1,
+        jg_min: 15,
         max_age: 100,
         min_age: 0,
         start_time: "",
         time_out: "",
         receive_time: "",
         desc: "",
+        receivetime: [],
+        cardtime: [],
       }, //导入文件
       dialogFormVisible: false,
       dialogAddFormVisible: false,
@@ -697,14 +982,18 @@ export default {
     area_cardchange(data) {
       console.log(data);
       let arr = data.filter((item) => {
-        console.log(/^\d{6}$/.test(item));
         return /^\d{6}$/.test(item);
       });
       this.$set(this.form, "area_card", arr);
     },
+    sexchange(data) {
+      if (data > 0) {
+        this.$set(this.form, "is_auth", 1);
+      }
+    },
     areachange(data) {
       if (data == 1) {
-        this.$set(this.form, "is_shehe", data);
+        this.$set(this.form, "is_auth", data);
       }
     },
     adverClick(id) {
@@ -759,7 +1048,7 @@ export default {
       );
     },
     // 上传前
-    beforeUpload(file) {
+    beforeimgUpload(file) {
       const _self = this;
       this.isvideoloading = true;
       return new Promise((resolve, reject) => {
@@ -775,7 +1064,7 @@ export default {
           .catch((err) => {
             console.log(err);
             reject(false);
-            _self.isvideoloading = false;
+            _self.iscoverloading = false;
           });
       });
     },
@@ -788,22 +1077,6 @@ export default {
       console.log(copyFile);
       this.uploadFile(copyFile);
       return false;
-      return new Promise((resolve, rejebeforeUploadct) => {
-        getQiniuToken()
-          .then((response) => {
-            console.log(response);
-            this.baseUrl = response.data.baseUrl;
-            const token = response.data.upToken;
-            _self._data.dataObj.token = token;
-            _self._data.dataObj.key = new Date().getTime() + "" + Math.random();
-            resolve(true);
-          })
-          .catch((err) => {
-            console.log(err);
-            reject(false);
-            _self.iscoverloading = false;
-          });
-      });
     },
     uploadFile(file) {
       const formdata = new FormData();
@@ -812,7 +1085,6 @@ export default {
     },
     postForm(fomedata) {
       wx_uploadimg(fomedata).then((res) => {
-        console.log("上传成功", res);
         this.iscoverloading = false;
         this.form.cover = res.data.url;
       });
@@ -826,10 +1098,10 @@ export default {
     beforeAvatarUpload(file) {
       this.imageloading = true;
     },
-    handleAvatarcoverSuccess(res, file) {
-      console.log(res, file);
-      this.iscoverloading = false;
-      this.form.cover = res.data.url;
+    handleImgAvatarSuccess(res, file) {
+      this.isimgloading = false;
+      console.log(res);
+      this.$set(this.form, "img", res.data.imgUrl);
     },
     //提交修改投票信息
     submitEditData() {
@@ -842,19 +1114,19 @@ export default {
         this.getList();
       });
     },
+    min_use_hourchange() {
+      this.$set(this.form, "max_use_hour", "");
+    },
     submitAddData() {
-      let form = JSON.parse(JSON.stringify(this.form));
-      //   if (form.is_area == 1) {
-      //     form["area_card"] = form["area_card"].reduce((prev, cur) => {
-      //       return prev + "|" + cur;
-      //     }, "");
-      //   }
-      form["time_out"] = form["time_out"] / 1000;
-      form["start_time"] = form["start_time"] / 1000;
-      form["receive_time"] = form["receive_time"] / 1000;
-      console.log(form);
       this.$refs["fromdata"].validate((valid) => {
         if (valid) {
+          let form = JSON.parse(JSON.stringify(this.form));
+          form["price"] = form["is_free"] == 2 ? form["price"] : 0;
+          form["time_out"] = form["cardtime"][1] / 1000;
+          form["start_time"] = form["cardtime"][0] / 1000;
+          form["receive_time"] = form["receivetime"][1] / 1000;
+          form["start_receive_time"] = form["receivetime"][0] / 1000;
+          console.log(form);
           if (this.is_edit) {
             editCard(form).then((res) => {
               this.dialogAddFormVisible = false;
@@ -882,17 +1154,21 @@ export default {
     handleEdit(row) {
       this.is_edit = true;
       let form = JSON.parse(JSON.stringify(row));
-      console.log(row, form);
+      form["sex"] = form["sex"] || 0;
       form["area_card"] = form["area_card"]
         ? Array.isArray(form["area_card"])
           ? form["area_card"]
           : JSON.parse(form["area_card"])
         : "";
-      form["time_out"] = new Date(form["time_out"]).getTime();
-      form["start_time"] = new Date(form["start_time"]).getTime();
-      form["receive_time"] = new Date(form["receive_time"]).getTime();
+      form["cardtime"] = [
+        new Date(form["start_time"]).getTime(),
+        new Date(form["time_out"]).getTime(),
+      ];
+      form["receivetime"] = [
+        new Date(form["start_receive_time"]).getTime(),
+        new Date(form["receive_time"]).getTime(),
+      ];
       this.form = form;
-      console.log(this.form);
       this.dialogAddFormVisible = true;
     },
     //发起投票活动
@@ -902,11 +1178,12 @@ export default {
         name: "",
         price: "",
         status: 1,
-        is_shehe: 1,
+        is_shehe: 2,
         is_auth: 1,
         cover: "",
         is_free: 1,
         is_area: 2,
+        jg_min: 15,
         come_in_num: 1,
         max_age: 100,
         min_age: 0,
@@ -914,6 +1191,9 @@ export default {
         time_out: "",
         receive_time: "",
         desc: "",
+        sex: 0,
+        receivetime: [],
+        cardtime: [],
       }; //导入文件
       this.dialogAddFormVisible = true;
     },
@@ -929,7 +1209,7 @@ export default {
     },
     // 修改状态状态
     handleEditStatus(id, status) {
-      this.$confirm("此操作将修改文章状态, 是否继续?", "提示", {
+      this.$confirm("此操作将修改卡片状态, 是否继续?", "提示", {
         confirmButtonText: "确定",
         cancelButtonText: "取消",
         type: "warning",
@@ -953,12 +1233,17 @@ export default {
     },
     //删除活动
     handleDel(row) {
-      this.$confirm("此操作将删除文章, 是否继续?", "提示", {
-        confirmButtonText: "确定",
-        cancelButtonText: "取消",
-        type: "warning",
-      })
+      this.$confirm(
+        "此操作将会删除卡片下所有关联的会员请谨慎操作, 是否继续?",
+        "提示",
+        {
+          confirmButtonText: "确定",
+          cancelButtonText: "取消",
+          type: "warning",
+        }
+      )
         .then(() => {
+          console.log(213131, row);
           delete_vip_card({ ...row }).then((response) => {
             this.getList();
             this.$message({
@@ -992,6 +1277,7 @@ export default {
           item["receive_time"] = parseTime(item["receive_time"]);
           item["start_time"] = parseTime(item["start_time"]);
           item["time_out"] = parseTime(item["time_out"]);
+          item["start_receive_time"] = parseTime(item["start_receive_time"]);
           return item;
         });
         this.total = response.data.pageInfo.total;
@@ -999,6 +1285,19 @@ export default {
     },
     handlestate() {
       this.listQuery.title = this.listQuery.title || "";
+      this.getList();
+    },
+    handleempty() {
+      this.listQuery = {
+        page: 1,
+        pageSize: 10,
+        is_free: "",
+        is_shehe: "",
+        is_auth: "",
+        title: "",
+        status: "",
+        querydate: "",
+      };
       this.getList();
     },
     //筛选过滤
@@ -1009,15 +1308,35 @@ export default {
 };
 </script>
 <style>
-.el-form-item--mini.el-form-item {
+.applist .fromdata .el-form-item--mini {
   min-width: 280px;
+}
+.max_use_hour .el-form-item__label::before {
+  content: " " !important;
 }
 .descstyle .el-form-item__content {
   width: 75%;
 }
-.el-date-editor.el-input,
-.el-date-editor.el-input__inner {
+
+.applist .fromdata .el-date-editor.el-input,
+.applist .el-date-editor.el-input__inner {
   width: 160px;
+}
+.sharestyle .el-form-item--mini.el-form-item {
+  min-width: 100%;
+}
+.sharestyle .el-form-item--mini.el-form-item .el-form-item__content {
+  min-width: 70%;
+}
+.sharestyle,
+.cardtimestyle {
+  width: 100%;
+}
+.cardtimestyle .el-form-item__content .el-input__inner {
+  min-width: 340px;
+}
+.form-title {
+  width: 100%;
 }
 .numstyle {
   width: 100%;

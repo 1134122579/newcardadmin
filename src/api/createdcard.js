@@ -15,6 +15,13 @@ export function create_vip_card(data) {
     data,
   });
 }
+export function delete_vip_card(data) {
+  return request({
+    url: "delete_vip_card",
+    method: "post",
+    data,
+  });
+}
 // 获取广告列表
 export function getAdvertSelect() {
   return request({
