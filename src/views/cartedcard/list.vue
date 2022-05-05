@@ -64,6 +64,17 @@
             <el-radio-button label="2">不需要</el-radio-button>
           </el-radio-group>
         </el-form-item>
+        <el-form-item label="卡片类型:" prop="type">
+          <el-radio-group
+            v-model="listQuery.type"
+            @change="selectStatus"
+            size="mini"
+          >
+            <el-radio-button label>全部</el-radio-button>
+            <el-radio-button :label="1">时效卡</el-radio-button>
+            <el-radio-button :label="2">包次卡</el-radio-button>
+          </el-radio-group>
+        </el-form-item>
         <div>
           <el-form-item label=" ">
             <el-button
@@ -188,11 +199,24 @@
           </template>
         </el-table-column>
         <el-table-column
+          label="卡片类型"
+          align="center"
+          prop="type"
+          sortable
+          width="110"
+        >
+          <template slot-scope="{ row }">
+            <el-tag :type="row.type | typeFilter" size="small" effect="dark">{{
+              row.type | typeTextFilter
+            }}</el-tag>
+          </template>
+        </el-table-column>
+        <el-table-column
           label="是否收费"
           align="center"
           prop="is_free"
           sortable
-          width="120"
+          width="110"
         >
           <template slot-scope="{ row }">
             <el-tag
@@ -221,7 +245,7 @@
         </el-table-column>
         <el-table-column
           label="身份认证"
-          width="120"
+          width="110"
           align="center"
           prop="is_auth"
           sortable
@@ -501,6 +525,25 @@
           ></el-input-number>
           <span>分钟</span>
         </el-form-item>
+        <el-form-item label="卡片类型:" prop="type">
+          <el-radio-group v-model="form.type" size="mini" :disabled="is_edit">
+            <el-radio-button :label="1">时效卡</el-radio-button>
+            <el-radio-button :label="2">包次卡</el-radio-button>
+          </el-radio-group>
+        </el-form-item>
+        <!-- send_num 发行张数 -->
+        <el-form-item
+          label="包次卡总次数:"
+          prop="limit_num"
+          v-if="form.type == 2"
+        >
+          <el-input-number v-model="form.limit_num" :min="1"></el-input-number>
+          <span> 次</span>
+        </el-form-item>
+        <el-form-item label="发行总张数:" prop="send_num">
+          <el-input-number v-model="form.send_num" :min="1"></el-input-number>
+          <span> 张</span>
+        </el-form-item>
         <div>
           <el-form-item label="最小年龄:" prop="min_age">
             <el-input-number
@@ -665,6 +708,14 @@ export default {
     clipboard,
   },
   filters: {
+    //   type  1   时效卡 2 包次卡
+    typeTextFilter(status) {
+      const statusMap = {
+        1: "时效卡",
+        2: "包次卡",
+      };
+      return statusMap[status];
+    },
     freeFilter(status) {
       const statusMap = {
         1: "免费",
@@ -775,6 +826,27 @@ export default {
           {
             required: true,
             message: "请输入间隔时间",
+            trigger: "blur",
+          },
+        ],
+        type: [
+          {
+            required: true,
+            message: "请选择卡片类型",
+            trigger: "blur",
+          },
+        ],
+        send_num: [
+          {
+            required: true,
+            message: "请输入发行张数",
+            trigger: "blur",
+          },
+        ],
+        limit_num: [
+          {
+            required: true,
+            message: "请输入包次卡总次数",
             trigger: "blur",
           },
         ],
@@ -932,6 +1004,7 @@ export default {
       disabled: "false",
       listQuery: {
         page: 1,
+        type: "",
         pageSize: 10,
         is_free: "",
         is_shehe: "",
@@ -953,6 +1026,9 @@ export default {
         is_area: 2,
         come_in_num: 1,
         jg_min: 15,
+        type: 1,
+        send_num: 1,
+        limit_num: 1,
         max_age: 100,
         min_age: 0,
         start_time: "",
@@ -1185,6 +1261,9 @@ export default {
         is_area: 2,
         jg_min: 15,
         come_in_num: 1,
+        type: 1,
+        send_num: 1,
+        limit_num: 1,
         max_age: 100,
         min_age: 0,
         start_time: "",
